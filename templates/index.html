@@ -6,126 +6,227 @@
     <title>Select Language</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <style>
-      body {
-        transition: background-color 0.5s ease, color 0.5s ease;
-      }
-      /* Dark mode overrides - matched to your Bootstrap theme */
-      body.dark-mode {
-        background-color: #121212; /* Very dark background from your Bootstrap theme */
-        color: #e0e0e0; /* Light text for dark mode from your Bootstrap theme */
-      }
+        body {
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+        /* Dark mode overrides - matched to your Bootstrap theme */
+        body.dark-mode {
+            background-color: #121212; /* Very dark background from your Bootstrap theme */
+            color: #e0e0e0; /* Light text for dark mode from your Bootstrap theme */
+        }
 
-      /* Light mode language links */
-      .lang-link {
-        background-color: white;
-        color: #212529; /* dark text */
-        transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Added shadow for consistency with movie cards */
-      }
-      .lang-link:hover {
-        background-color: #333; /* dark hover background */
-        color: white;
-        transform: translateY(-2px); /* Slight lift on hover */
-        box-shadow: 0 6px 12px rgba(0,0,0,0.2); /* Enhanced shadow on hover */
-      }
-      /* Dark mode language links - matched to your Bootstrap theme card styles */
-      body.dark-mode .lang-link {
-        background-color: #1e1e1e; /* Slightly lighter dark for cards from your Bootstrap theme */
-        color: #e0e0e0;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      }
-      body.dark-mode .lang-link:hover {
-        background-color: #343a40; /* Similar to card hover in Bootstrap theme */
-        color: white;
-        box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-      }
+        /* Light mode language links */
+        .lang-link {
+            background-color: white;
+            color: #212529; /* dark text */
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Added shadow for consistency with movie cards */
+        }
+        .lang-link:hover {
+            background-color: #333; /* dark hover background */
+            color: white;
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2); /* Enhanced shadow on hover */
+        }
+        /* Dark mode language links - matched to your Bootstrap theme card styles */
+        body.dark-mode .lang-link {
+            background-color: #1e1e1e; /* Slightly lighter dark for cards from your Bootstrap theme */
+            color: #e0e0e0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        body.dark-mode .lang-link:hover {
+            background-color: #343a40; /* Similar to card hover in Bootstrap theme */
+            color: white;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
 
-      /* Dark mode error text - matched to your Bootstrap theme alert */
-      body.dark-mode .error-text {
-        color: #ffc107; /* Warning yellow for text, stands out more than red */
-      }
+        /* Dark mode error text - matched to your Bootstrap theme alert */
+        body.dark-mode .error-text {
+            color: #ffc107; /* Warning yellow for text, stands out more than red */
+        }
 
-      /* Dark mode H1 text - matched to your Bootstrap theme */
-      body.dark-mode h1 {
-        color: #ffffff; /* White heading text */
-      }
+        /* Dark mode H1 text - matched to your Bootstrap theme */
+        body.dark-mode h1 {
+            color: #ffffff; /* White heading text */
+        }
 
-      /* Toggle button */
-      #toggleDarkMode {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        background-color: #333; /* dark background */
-        color: white;
-        border: none;
-        border-radius: 0.375rem;
-        padding: 0.5rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.3s ease;
-        width: 2.5rem;
-        height: 2.5rem;
-        z-index: 1000;
-      }
-      #toggleDarkMode:hover {
-        background-color: #555;
-      }
-      /* Icon size */
-      #modeIcon {
-        font-size: 1.25rem;
-      }
+        /* Toggle button */
+        #toggleDarkMode {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background-color: #333; /* dark background */
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+            width: 2.5rem;
+            height: 2.5rem;
+            z-index: 1000;
+        }
+        #toggleDarkMode:hover {
+            background-color: #555;
+        }
+        /* Icon size */
+        #modeIcon {
+            font-size: 1.25rem;
+        }
+
+        /* Styles for the search bar from the first HTML, adapted for Tailwind CSS context */
+        .search-box {
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+
+        .input-group {
+            display: flex; /* Essential for alignment */
+            align-items: stretch; /* Stretches children to fill height */
+            gap: 0.5rem; /* Space between elements, replaces individual ml-2 */
+        }
+
+        .form-control-lg, .form-select-lg { /* Apply consistent styling to both input and select */
+            padding: 0.75rem 1.25rem;
+            font-size: 1.25rem;
+            border-radius: 0.375rem; /* Matches Tailwind's rounded-md */
+            border: 1px solid #ced4da;
+            flex-grow: 1; /* Allows input to take up available space */
+        }
+
+        .btn-primary {
+            background-color: #0d6efd; /* Bootstrap primary blue */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            font-size: 1.25rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+            white-space: nowrap; /* Prevents text wrap on button */
+        }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+        }
+
+        /* Dark mode adjustments for search bar elements */
+        body.dark-mode .form-control-lg,
+        body.dark-mode .form-select-lg {
+            background-color: #333;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+        body.dark-mode .form-control-lg::placeholder {
+            color: #aaa;
+        }
+        body.dark-mode .btn-primary {
+            background-color: #0d6efd; /* Keep primary blue in dark mode */
+        }
+        body.dark-mode .btn-primary:hover {
+            background-color: #0b5ed7;
+        }
+
+        /* Select element styling */
+        .form-select-lg {
+            appearance: none; /* Removes default arrow */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            /* Explicit width for the select to control its size better, adjust as needed */
+            width: 150px; /* Example fixed width, adjust to your preference */
+            flex-shrink: 0; /* Prevents it from shrinking too much */
+        }
+
+        body.dark-mode .form-select-lg {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e0e0e0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"); /* Lighter arrow for dark mode */
+        }
     </style>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-      rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+            rel="stylesheet"
     />
 </head>
 <body class="bg-gray-100 p-8">
-    <button id="toggleDarkMode" aria-label="Toggle dark mode" title="Toggle dark mode">
-        <i id="modeIcon" class="bi bi-moon-fill"></i>
-    </button>
+<button id="toggleDarkMode" aria-label="Toggle dark mode" title="Toggle dark mode">
+    <i id="modeIcon" class="bi bi-moon-fill"></i>
+</button>
 
-    <h1 class="text-3xl font-bold text-center mb-6">Choose a Language</h1>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-        {% for lang in languages %}
-        <a href="/language/{{ lang }}" class="block text-center lang-link p-4 rounded shadow capitalize font-semibold">
-            {{ lang }}
-        </a>
-        {% endfor %}
-    </div>
-    {% if error %}
-    <p class="error-text text-center text-red-500 mt-4">{{ error }}</p>
-    {% endif %}
+<h1 class="text-3xl font-bold text-center mb-6">Choose a Language</h1>
 
-    <script>
-      const toggleButton = document.getElementById('toggleDarkMode');
-      const body = document.body;
-      const modeIcon = document.getElementById('modeIcon');
+<div class="search-box">
+    <form action="/search/{{ language }}" method="POST" class="mb-4">
+        <div class="input-group">
+            <select name="selected_language" id="languageSelect" class="form-select-lg" onchange="updateFormAction()">
+                {% set all_languages = ['tamil', 'hindi', 'telugu', 'malayalam', 'kannada', 'bengali', 'marathi', 'punjabi'] %}
+                {% for lang_option in all_languages %}
+                <option value="{{ lang_option }}" {% if language and language == lang_option %}selected{% endif %}>
+                    {{ lang_option|title }}
+                </option>
+                {% endfor %}
+            </select>
+            <input type="text" name="movie_title" class="form-control form-control-lg"
+                   placeholder="Search movies..." value="{{ search if search else '' }}">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </div>
+    </form>
+</div>
 
-      function updateIcon() {
-          if (body.classList.contains('dark-mode')) {
-              modeIcon.classList.remove('bi-moon-fill');
-              modeIcon.classList.add('bi-sun-fill');
-          } else {
-              modeIcon.classList.remove('bi-sun-fill');
-              modeIcon.classList.add('bi-moon-fill');
-          }
-      }
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+    {% for lang in languages %}
+    <a href="/language/{{ lang }}" class="block text-center lang-link p-4 rounded shadow capitalize font-semibold">
+        {{ lang }}
+    </a>
+    {% endfor %}
+</div>
+{% if error %}
+<p class="error-text text-center text-red-500 mt-4">{{ error }}</p>
+{% endif %}
 
-      // Load saved preference on page load
-      if (localStorage.getItem('dark-mode') === 'enabled') {
-          body.classList.add('dark-mode');
-      }
-      updateIcon();
+<script>
+    const toggleButton = document.getElementById('toggleDarkMode');
+    const body = document.body;
+    const modeIcon = document.getElementById('modeIcon');
 
-      toggleButton.addEventListener('click', () => {
-          body.classList.toggle('dark-mode');
-          const isDarkMode = body.classList.contains('dark-mode');
-          localStorage.setItem('dark-mode', isDarkMode ? 'enabled' : 'disabled');
-          updateIcon();
-      });
-    </script>
+    function updateIcon() {
+        if (body.classList.contains('dark-mode')) {
+            modeIcon.classList.remove('bi-moon-fill');
+            modeIcon.classList.add('bi-sun-fill');
+        } else {
+            modeIcon.classList.remove('bi-sun-fill');
+            modeIcon.classList.add('bi-moon-fill');
+        }
+    }
+
+    // Load saved preference on page load
+    if (localStorage.getItem('dark-mode') === 'enabled') {
+        body.classList.add('dark-mode');
+    }
+    updateIcon();
+
+    toggleButton.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        const isDarkMode = body.classList.contains('dark-mode');
+        localStorage.setItem('dark-mode', isDarkMode ? 'enabled' : 'disabled');
+        updateIcon();
+    });
+
+    // Function to update the form action based on selected language
+    function updateFormAction() {
+        const selectElement = document.getElementById('languageSelect');
+        const selectedLanguage = selectElement.value;
+        const form = selectElement.closest('form'); // Get the parent form
+        form.action = `/search/${selectedLanguage}`; // Update the form's action URL
+    }
+
+    // Call updateFormAction on page load to ensure initial form action is correct
+    document.addEventListener('DOMContentLoaded', updateFormAction);
+</script>
 </body>
 </html>
