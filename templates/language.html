@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einthusan Scraper - {{ language|title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .load-more-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+        #loadMoreBtn {
+            padding: 10px 30px;
+            font-size: 1.1rem;
+        }
+        .movie-card {
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        .movie-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+        }
+        .movie-img {
+            height: 250px; /* Fixed height for consistency */
+            width: 100%;
+            object-fit: cover; /* Ensures images cover the area without distortion */
+        }
+        .movie-title {
+            padding: 15px;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.95rem;
+            white-space: nowrap; /* Prevent title from wrapping */
+            overflow: hidden;    /* Hide overflowed text */
+            text-overflow: ellipsis; /* Show ellipsis for overflowed text */
+        }
+        #loadingSpinner {
+            display: none;
+            margin: 20px auto;
+        }
+        .category-tabs .nav-link {
+            font-weight: 500;
+            color: #495057;
+        }
+        .category-tabs .nav-link.active {
+            font-weight: 600;
+            color: #0d6efd;
+        }
+        .search-box {
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="text-center mb-4">{{ language|title }} Movies</h1>
+
+        <div class="search-box">
+            <form action="/search/{{ language }}" method="POST" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="movie_title" class="form-control form-control-lg"
+                            placeholder="Search movies..." value="{{ search if search else '' }}">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <ul class="nav nav-tabs category-tabs mb-4 justify-content-center">
+            <li class="nav-item">
+                <a class="nav-link {% if category == 'recent' %}active{% endif %}"
+                   href="/language/{{ language }}?category=recent">Recently Added</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if category == 'popular' %}active{% endif %}"
+                   href="/language/{{ language }}?category=popular">Most Popular</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-success" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Languages
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="/language/tamil">Tamil</a></li>
+                    <li><a class="dropdown-item" href="/language/hindi">Hindi</a></li>
+                    <li><a class="dropdown-item" href="/language/telugu">Telugu</a></li>
+                    <li><a class="dropdown-item" href="/language/malayalam">Malayalam</a></li>
+                    <li><a class="dropdown-item" href="/language/kannada">Kannada</a></li>
+                    <li><a class="dropdown-item" href="/language/bengali">Bengali</a></li>
+                    <li><a class="dropdown-item" href="/language/marathi">Marathi</a></li>
+                    <li><a class="dropdown-item" href="/language/punjabi">Punjabi</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-4" id="moviesContainer">
+            {% for movie in movies %}
+            <div class="col">
+                <div class="movie-card h-100">
+                    {# Pass both the page URL and the movie title to the /watch route #}
+                    <a href="/watch?url={{ movie.page_url|urlencode }}&title={{ movie.title|urlencode }}" class="movie-link">
+                        <img src="{{ movie.img_url }}" class="movie-img" alt="{{ movie.title }}"
+                             onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                        <div class="movie-title">{{ movie.title }}</div>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="load-more-container">
+            <button id="loadMoreBtn" class="btn btn-primary" data-next-page="{{ next_page }}">
+                Load More
+            </button>
+            <div id="loadingSpinner" class="spinner-border text-primary mt-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('loadMoreBtn').addEventListener('click', function() {
+            const btn = this;
+            const spinner = document.getElementById('loadingSpinner');
+            let nextPage = parseInt(btn.dataset.nextPage); // Parse as int
+            const language = "{{ language }}";
+            const category = "{{ category }}";
+
+            btn.disabled = true;
+            spinner.style.display = 'block';
+
+            // Fetch two pages at a time for efficiency
+            const fetchPage = (pageNumber) =>
+                fetch(`/language/${language}?category=${category}&page=${pageNumber}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.json();
+                });
+
+            Promise.all([
+                fetchPage(nextPage),
+                fetchPage(nextPage + 1) // Fetch the next page
+            ])
+            .then(dataArray => {
+                let combinedMovies = [];
+                let hasMore = false;
+
+                // Process first page data
+                if (dataArray[0] && dataArray[0].movies) {
+                    combinedMovies = combinedMovies.concat(dataArray[0].movies);
+                    // Update next page for the button based on the second request's next_page
+                    if (dataArray[1] && dataArray[1].next_page) {
+                        nextPage = dataArray[1].next_page;
+                    } else {
+                        // If second request failed or no next_page, assume current nextPage + 1
+                        nextPage = parseInt(dataArray[0].next_page); // Use the next_page from the first request
+                    }
+                    hasMore = dataArray[0].has_more || (dataArray[1] && dataArray[1].has_more); // Check has_more from both
+                }
+
+                // Process second page data if available
+                if (dataArray[1] && dataArray[1].movies) {
+                    combinedMovies = combinedMovies.concat(dataArray[1].movies);
+                    hasMore = dataArray[1].has_more; // The last fetched page dictates if there's more
+                    nextPage = dataArray[1].next_page; // Update next page for the button
+                }
+
+
+                if (combinedMovies.length > 0) {
+                    const moviesContainer = document.getElementById('moviesContainer');
+                    combinedMovies.forEach(movie => {
+                        // Ensure movie.page_url and movie.title are properly encoded for the URL
+                        const moviePageUrlEncoded = encodeURIComponent(movie.page_url);
+                        const movieTitleEncoded = encodeURIComponent(movie.title);
+
+                        const movieHtml = `
+                            <div class="col">
+                                <div class="movie-card h-100">
+                                    <a href="/watch?url=${moviePageUrlEncoded}&title=${movieTitleEncoded}" class="movie-link">
+                                        <img src="${movie.img_url}" class="movie-img" alt="${movie.title}"
+                                             onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                                        <div class="movie-title">${movie.title}</div>
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                        moviesContainer.insertAdjacentHTML('beforeend', movieHtml);
+                    });
+
+                    btn.dataset.nextPage = nextPage; // Update for the next load
+                    if (!hasMore && combinedMovies.length < 1) { // If no movies loaded and no more indicated
+                        btn.style.display = 'none';
+                    }
+                } else {
+                    btn.style.display = 'none'; // No more movies to load
+                }
+
+                if (!hasMore || combinedMovies.length === 0) {
+                    btn.style.display = 'none'; // Hide if no more data or nothing was loaded
+                }
+
+            })
+            .catch(error => {
+                console.error('Error loading more movies:', error);
+                btn.textContent = 'Error loading movies, please try again.';
+                btn.disabled = false; // Re-enable button on error
+            })
+            .finally(() => {
+                spinner.style.display = 'none';
+                btn.disabled = false; // Always re-enable the button
+            });
+        });
+    </script>
+</body>
+</html>
