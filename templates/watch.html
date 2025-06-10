@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ movie_title }}</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
     />
     <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     />
     <style>
         body {
@@ -36,10 +36,129 @@
             left: 0;
             width: 100%;
             height: 100%;
+            /* Hide native controls */
+            controls: none;
+        }
+
+        /* Hide default video controls */
+        video::-webkit-media-controls {
+            display: none !important;
+        }
+        video::-webkit-media-controls-enclosure {
+            display: none !important;
         }
 
         h1 {
             transition: color 0.5s ease;
+        }
+
+        /* Custom controls styling */
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10; /* Ensure controls are above video */
+        }
+        .video-container:hover .custom-controls,
+        .video-container.controls-visible .custom-controls { /* Use a custom class for visibility */
+            opacity: 1;
+        }
+
+        /* Styling for the control buttons */
+        .control-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            display: flex; /* For aligning icon and spinner */
+            align-items: center;
+            justify-content: center;
+        }
+        .control-button:hover {
+            color: #0d6efd; /* Bootstrap primary blue */
+        }
+
+        .progress-bar-container {
+            flex-grow: 1;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            margin: 0 15px;
+            cursor: pointer;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #0d6efd; /* Bootstrap primary blue */
+            border-radius: 5px;
+        }
+        .progress-bar-handle {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            display: none; /* Hidden by default */
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .progress-bar-container:hover .progress-bar-handle {
+            display: block; /* Show on hover */
+        }
+
+
+        .time-display {
+            color: white;
+            font-size: 0.9rem;
+            margin-right: 15px;
+            cursor: pointer; /* Indicate it's clickable */
+            user-select: none; /* Prevent text selection on double-click */
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 10px; /* Add some spacing */
+        }
+        .volume-slider {
+            width: 80px;
+            -webkit-appearance: none;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Loading Spinner */
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: white;
+            border-width: 0.2em;
+            vertical-align: middle;
         }
 
         /* Dark mode styles */
@@ -83,7 +202,7 @@
             font-size: 1.25rem;
             cursor: pointer;
             background-color: #333;  /* dark background always */
-            color: white;            /* white icon always */
+            color: white;           /* white icon always */
             width: 2.5rem;
             height: 2.5rem;
         }
@@ -93,7 +212,7 @@
     <div class="container py-5">
         <div class="card shadow-lg p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">{{ movie_title }}</h1>
+                <h1 class="h3 mb-0" id="movieTitleElement">{{ movie_title }}</h1>
                 <div class="d-flex gap-2 align-items-center">
                     <button id="toggleDarkMode" title="Toggle dark mode" aria-label="Toggle dark mode">
                         <i id="modeIcon" class="bi bi-moon-fill"></i>
@@ -111,11 +230,38 @@
             </div>
 
             {% if video_url %}
-                <div class="video-container mb-4 rounded">
-                    <video controls controlsList="nodownload">
+                <div class="video-container mb-4 rounded" id="videoContainer">
+                    <video id="moviePlayer" controlsList="nodownload" preload="metadata">
                         <source src="{{ video_url }}" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
+
+                    <div class="custom-controls">
+                        <button id="playPauseButton" class="control-button" title="Play/Pause">
+                            <i class="bi bi-play-fill"></i>
+                            <div class="spinner-border text-light" role="status" style="display: none;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </button>
+
+                        <div class="volume-container">
+                            <button id="muteButton" class="control-button" title="Mute/Unmute">
+                                <i class="bi bi-volume-up-fill"></i>
+                            </button>
+                            <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="1">
+                        </div>
+
+                        <div class="progress-bar-container" id="progressBarContainer">
+                            <div class="progress-bar" id="progressBar"></div>
+                            <div class="progress-bar-handle" id="progressBarHandle"></div>
+                        </div>
+
+                        <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
+
+                        <button id="fullscreenButton" class="control-button" title="Fullscreen">
+                            <i class="bi bi-fullscreen"></i>
+                        </button>
+                    </div>
                 </div>
             {% else %}
                 <div class="alert alert-danger text-center" role="alert">
@@ -159,6 +305,400 @@
             localStorage.setItem('dark-mode', isDarkMode ? 'enabled' : 'disabled');
             updateIcon();
         });
+
+        // --- Custom Video Player JavaScript ---
+        const moviePlayer = document.getElementById('moviePlayer');
+        const videoContainer = document.getElementById('videoContainer');
+        const playPauseButton = document.getElementById('playPauseButton');
+        const playPauseIcon = playPauseButton.querySelector('i');
+        const loadingSpinner = playPauseButton.querySelector('.spinner-border');
+        const muteButton = document.getElementById('muteButton');
+        const muteIcon = muteButton.querySelector('i');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressBarHandle = document.getElementById('progressBarHandle');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const fullscreenButton = document.getElementById('fullscreenButton');
+        const fullscreenIcon = fullscreenButton.querySelector('i');
+        const movieTitleElement = document.getElementById('movieTitleElement');
+
+        let isDraggingProgressBar = false;
+        let controlsTimeout; // To hide controls after a delay
+        let isMouseOverVideo = false; // Track if mouse is over the video container
+        let tapTimeout; // NEW: for differentiating single/double tap
+        const TAP_DELAY = 300; // Milliseconds to wait before considering it a single tap
+
+        let timeDisplayMode = 0; // 0: current/total, 1: current only, 2: time remaining
+
+        if (moviePlayer && movieTitleElement) {
+            // Function to format time for display (now handles hours)
+            function formatTime(seconds, includeHours = false) {
+                if (isNaN(seconds) || seconds < 0) return "00:00";
+                seconds = Math.floor(seconds); // Ensure integer seconds
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const remainingSeconds = seconds % 60;
+
+                const pad = (num) => String(num).padStart(2, '0');
+
+                if (includeHours || hours > 0) {
+                    return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
+                } else {
+                    return `${pad(minutes)}:${pad(remainingSeconds)}`;
+                }
+            }
+
+            // Function to update the time display based on mode
+            function updateTimeDisplay() {
+                const currentTime = moviePlayer.currentTime;
+                const duration = moviePlayer.duration;
+                let displayString = '';
+
+                const includeHoursInFormat = duration >= 3600;
+
+                switch (timeDisplayMode) {
+                    case 0: // Current / Total
+                        displayString = `${formatTime(currentTime, includeHoursInFormat)} / ${formatTime(duration, includeHoursInFormat)}`;
+                        break;
+                    case 1: // Current Time Only
+                        displayString = `${formatTime(currentTime, includeHoursInFormat)}`;
+                        break;
+                    case 2: // Time Remaining
+                        const remainingTime = duration - currentTime;
+                        displayString = `-${formatTime(remainingTime, includeHoursInFormat)}`;
+                        break;
+                }
+                timeDisplay.textContent = displayString;
+            }
+
+            // Event listener for clicking the time display
+            timeDisplay.addEventListener('click', () => {
+                timeDisplayMode = (timeDisplayMode + 1) % 3;
+                updateTimeDisplay();
+            });
+
+            // Show/Hide Controls
+            function showControls() {
+                videoContainer.classList.add('controls-visible');
+                clearTimeout(controlsTimeout);
+
+                // Determine timeout duration based on fullscreen status
+                const timeoutDuration = document.fullscreenElement ? 10000 : 3000; // 10 seconds in fullscreen, 3 seconds normally
+
+                // Only set timeout to hide if playing and not paused/ended
+                if (!moviePlayer.paused && !moviePlayer.ended) {
+                    controlsTimeout = setTimeout(() => {
+                        videoContainer.classList.remove('controls-visible');
+                    }, timeoutDuration);
+                }
+            }
+
+            function hideControls() {
+                if (!moviePlayer.paused && !moviePlayer.ended) {
+                    videoContainer.classList.remove('controls-visible');
+                }
+            }
+
+            videoContainer.addEventListener('mousemove', () => {
+                isMouseOverVideo = true;
+                showControls();
+            });
+            videoContainer.addEventListener('mouseleave', () => {
+                isMouseOverVideo = false;
+                hideControls();
+            });
+
+            // Show controls initially if paused or ended
+            if (moviePlayer.paused || moviePlayer.ended) {
+                showControls();
+            }
+
+            // Handle Tab Visibility Change
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    clearTimeout(controlsTimeout);
+                    videoContainer.classList.remove('controls-visible');
+                } else {
+                    if (moviePlayer.paused || moviePlayer.ended || isMouseOverVideo) {
+                        showControls();
+                    }
+                }
+            });
+
+
+            // Update time display and progress bar
+            function updateProgressBar() {
+                const progress = (moviePlayer.currentTime / moviePlayer.duration) * 100;
+                progressBar.style.width = `${progress}%`;
+                progressBarHandle.style.left = `${progress}%`;
+                updateTimeDisplay();
+            }
+
+            // Play/Pause functionality for the custom button
+            playPauseButton.addEventListener('click', () => {
+                if (moviePlayer.paused || moviePlayer.ended) {
+                    moviePlayer.play();
+                } else {
+                    moviePlayer.pause();
+                }
+            });
+
+            // **MODIFIED**: Tap to pause/play functionality on the video itself, avoiding double tap conflict
+            moviePlayer.addEventListener('click', () => {
+                clearTimeout(tapTimeout); // Clear any previous single-tap timeout
+                tapTimeout = setTimeout(() => {
+                    // This code runs if it's a single tap (no dblclick occurred within TAP_DELAY)
+                    if (moviePlayer.paused || moviePlayer.ended) {
+                        moviePlayer.play();
+                    } else {
+                        moviePlayer.pause();
+                    }
+                }, TAP_DELAY);
+            });
+
+
+            // **ORIGINAL (retained)**: Double-click/tap for fullscreen
+            videoContainer.addEventListener('dblclick', () => {
+                clearTimeout(tapTimeout); // Crucial: Cancel any pending single-tap action
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    videoContainer.requestFullscreen();
+                }
+            });
+
+            // Handle loading state
+            moviePlayer.addEventListener('waiting', () => {
+                playPauseIcon.style.display = 'none';
+                loadingSpinner.style.display = 'block';
+            });
+
+            moviePlayer.addEventListener('playing', () => {
+                playPauseIcon.style.display = 'block';
+                loadingSpinner.style.display = 'none';
+                playPauseIcon.classList.remove('bi-play-fill');
+                playPauseIcon.classList.add('bi-pause-fill');
+                showControls(); // Reset control hide timer
+            });
+
+            moviePlayer.addEventListener('canplay', () => {
+                if (loadingSpinner.style.display === 'block') {
+                    playPauseIcon.style.display = 'block';
+                    loadingSpinner.style.display = 'none';
+                }
+            });
+
+            moviePlayer.addEventListener('play', () => {
+                playPauseIcon.classList.remove('bi-play-fill');
+                playPauseIcon.classList.add('bi-pause-fill');
+                showControls(); // Start timer to hide controls
+            });
+
+            moviePlayer.addEventListener('pause', () => {
+                playPauseIcon.classList.remove('bi-pause-fill');
+                playPauseIcon.classList.add('bi-play-fill');
+                showControls(); // Keep controls visible when paused
+            });
+
+            moviePlayer.addEventListener('ended', () => {
+                playPauseIcon.classList.remove('bi-pause-fill');
+                playPauseIcon.classList.add('bi-play-fill');
+                showControls(); // Keep controls visible when ended
+            });
+
+
+            // Volume control
+            muteButton.addEventListener('click', () => {
+                moviePlayer.muted = !moviePlayer.muted;
+                if (moviePlayer.muted) {
+                    muteIcon.classList.remove('bi-volume-up-fill');
+                    muteIcon.classList.add('bi-volume-mute-fill');
+                    volumeSlider.value = 0;
+                } else {
+                    muteIcon.classList.remove('bi-volume-mute-fill');
+                    muteIcon.classList.add('bi-volume-up-fill');
+                    if (moviePlayer.volume === 0) {
+                        moviePlayer.volume = 0.5;
+                        volumeSlider.value = 0.5;
+                    } else {
+                        volumeSlider.value = moviePlayer.volume;
+                    }
+                }
+            });
+
+            volumeSlider.addEventListener('input', () => {
+                moviePlayer.volume = volumeSlider.value;
+                if (volumeSlider.value == 0) {
+                    moviePlayer.muted = true;
+                    muteIcon.classList.remove('bi-volume-up-fill');
+                    muteIcon.classList.add('bi-volume-mute-fill');
+                } else {
+                    moviePlayer.muted = false;
+                    muteIcon.classList.remove('bi-volume-mute-fill');
+                    muteIcon.classList.add('bi-volume-up-fill');
+                }
+            });
+
+            moviePlayer.addEventListener('volumechange', () => {
+                volumeSlider.value = moviePlayer.volume;
+                if (moviePlayer.muted || moviePlayer.volume === 0) {
+                    muteIcon.classList.remove('bi-volume-up-fill');
+                    muteIcon.classList.add('bi-volume-mute-fill');
+                } else {
+                    muteIcon.classList.remove('bi-volume-mute-fill');
+                    muteIcon.classList.add('bi-volume-up-fill');
+                }
+            });
+
+            // Progress bar (seeking)
+            progressBarContainer.addEventListener('mousedown', (e) => {
+                isDraggingProgressBar = true;
+                updateSeek(e);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDraggingProgressBar) {
+                    updateSeek(e);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDraggingProgressBar = false;
+            });
+
+            function updateSeek(e) {
+                const rect = progressBarContainer.getBoundingClientRect();
+                let clientX = e.clientX;
+
+                if (clientX < rect.left) {
+                    clientX = rect.left;
+                } else if (clientX > rect.right) {
+                    clientX = rect.right;
+                }
+
+                const clickX = clientX - rect.left;
+                const percent = clickX / rect.width;
+                moviePlayer.currentTime = moviePlayer.duration * percent;
+            }
+
+            moviePlayer.addEventListener('timeupdate', updateProgressBar);
+            moviePlayer.addEventListener('loadedmetadata', updateProgressBar);
+
+            // Fullscreen functionality
+            fullscreenButton.addEventListener('click', () => {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    videoContainer.requestFullscreen();
+                }
+            });
+
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    fullscreenIcon.classList.remove('bi-fullscreen');
+                    fullscreenIcon.classList.add('bi-fullscreen-exit');
+                    // When entering fullscreen, immediately show controls and set long timeout
+                    showControls();
+                } else {
+                    fullscreenIcon.classList.remove('bi-fullscreen-exit');
+                    fullscreenIcon.classList.add('bi-fullscreen');
+                    // When exiting fullscreen, immediately show controls and set short timeout
+                    showControls();
+                }
+            });
+
+            // **MODIFIED**: Keyboard functionality (added 'M' key)
+            document.addEventListener('keydown', (e) => {
+                const activeElementTag = document.activeElement.tagName;
+                const isTyping = activeElementTag === 'INPUT' || activeElementTag === 'TEXTAREA';
+
+                if (!isTyping) {
+                    if (['Space', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'KeyM', 'KeyF'].includes(e.code)) {
+                        e.preventDefault();
+                    }
+
+                    switch (e.code) {
+                        case 'Space':
+                            if (moviePlayer.paused || moviePlayer.ended) {
+                                moviePlayer.play();
+                            } else {
+                                moviePlayer.pause();
+                            }
+                            break;
+                        case 'ArrowRight':
+                            moviePlayer.currentTime += 5;
+                            break;
+                        case 'ArrowLeft':
+                            moviePlayer.currentTime -= 5;
+                            break;
+                        case 'ArrowUp':
+                            if (moviePlayer.volume < 1) {
+                                moviePlayer.volume = Math.min(1, moviePlayer.volume + 0.05);
+                            }
+                            break;
+                        case 'ArrowDown':
+                            if (moviePlayer.volume > 0) {
+                                moviePlayer.volume = Math.max(0, moviePlayer.volume - 0.05);
+                            }
+                            break;
+                        case 'KeyM': // NEW: 'M' key for mute
+                            muteButton.click(); // Trigger the existing mute button's click handler
+                            break;
+                        case 'KeyF':
+                            fullscreenButton.click();
+                            break;
+                    }
+                }
+            });
+
+
+            // --- "Continue Watching" Logic ---
+            const movieKey = `movie_progress_${movieTitleElement.textContent.trim().replace(/\s+/g, '_').toLowerCase()}`;
+
+            moviePlayer.addEventListener('loadedmetadata', () => {
+                const savedTime = localStorage.getItem(movieKey);
+                if (savedTime && moviePlayer.readyState >= 2) {
+                    moviePlayer.currentTime = parseFloat(savedTime);
+                    console.log(`Resuming ${movieTitleElement.textContent.trim()} at ${formatTime(parseFloat(savedTime))}.`);
+                }
+                updateProgressBar();
+            }, { once: true });
+
+            if (moviePlayer.readyState >= 2) {
+                const savedTime = localStorage.getItem(movieKey);
+                if (savedTime) {
+                    moviePlayer.currentTime = parseFloat(savedTime);
+                    console.log(`Resuming (fallback) ${movieTitleElement.textContent.trim()} at ${formatTime(parseFloat(savedTime))}.`);
+                }
+                updateProgressBar();
+            }
+
+            let saveInterval;
+            moviePlayer.addEventListener('play', () => {
+                saveInterval = setInterval(() => {
+                    localStorage.setItem(movieKey, moviePlayer.currentTime.toString());
+                }, 5000);
+            });
+
+            moviePlayer.addEventListener('pause', () => {
+                clearInterval(saveInterval);
+                localStorage.setItem(movieKey, moviePlayer.currentTime.toString());
+            });
+
+            moviePlayer.addEventListener('ended', () => {
+                clearInterval(saveInterval);
+                localStorage.removeItem(movieKey);
+                console.log(`Video ended, cleared progress for ${movieTitleElement.textContent.trim()}.`);
+            });
+
+            window.addEventListener('beforeunload', () => {
+                if (!moviePlayer.ended) {
+                    localStorage.setItem(movieKey, moviePlayer.currentTime.toString());
+                    console.log(`Saved progress on unload for ${movieTitleElement.textContent.trim()}: ${moviePlayer.currentTime}s`);
+                }
+            });
+        }
     </script>
 </body>
 </html>
