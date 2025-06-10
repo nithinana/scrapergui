@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Language</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-3xl font-bold text-center mb-6">Choose a Language</h1>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+        {% for lang in languages %}
+        <a href="/language/{{ lang }}" class="block text-center bg-white p-4 rounded shadow hover:bg-blue-100 capitalize font-semibold">
+            {{ lang }}
+        </a>
+        {% endfor %}
+    </div>
+    {% if error %}
+    <p class="text-center text-red-500 mt-4">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
