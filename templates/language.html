@@ -86,9 +86,11 @@
             transition: color 0.5s ease, background-color 0.5s ease, border-color 0.5s ease;
         }
         /* --- END Category Tabs CSS Changes --- */
+
+        /* Search box container sizing */
         .search-box {
-            max-width: 500px;
-            margin: 0 auto 40px; /* Increased bottom margin for more separation */
+            max-width: 500px; /* Keep a max-width for desktop for better aesthetics */
+            margin: 0 auto 40px; /* Centered with bottom margin */
         }
 
         /* Add transitions to elements that change color/background */
@@ -132,22 +134,41 @@
             border-color: #2c3136; /* Match background to hide border */
         }
         /* --- END Dark Mode Category Tabs CSS Changes --- */
+
+        /* Search input styling for clarity in both modes */
+        .form-control {
+            border: 1px solid #ced4da; /* Default light mode border */
+            background-color: #fff; /* Explicitly white for light mode */
+            color: #212529; /* Dark text for light mode */
+        }
+        .form-control::placeholder {
+            color: #6c757d; /* Default placeholder color */
+        }
+
         body.dark-mode .form-control {
-            background-color: #333; /* Darker input background */
+            background-color: #282828; /* Darker input background for better contrast */
             color: #e0e0e0; /* Light text for input */
             border-color: #555; /* Lighter border for contrast */
         }
         body.dark-mode .form-control::placeholder {
-            color: #aaa; /* Lighter placeholder text */
+            color: #bbb; /* Lighter placeholder text for better visibility */
         }
+
         /* Keep Bootstrap's primary and success buttons the same color */
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd; /* Ensure border matches background */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+        }
         body.dark-mode .btn-primary,
-        body.dark-mode .btn-primary:hover,
-        body.dark-mode .btn-success,
-        body.dark-mode .btn-success:hover {
-            /* These will inherit their Bootstrap colors, which are fine on a dark background */
+        body.dark-mode .btn-primary:hover {
             color: white; /* Ensure text remains white for these buttons */
         }
+
         body.dark-mode .dropdown-menu {
             background-color: #1e1e1e; /* Darker background for dropdown */
             border-color: #333;
@@ -178,11 +199,94 @@
             color: white;           /* White icon always */
             width: 2.5rem;
             height: 2.5rem;
-            /* New positioning for the button */
             position: fixed; /* Fixes its position relative to the viewport */
             top: 1rem;       /* 1rem from the top */
             right: 1rem;     /* 1rem from the right */
             z-index: 1000;   /* Ensure it stays on top of other content */
+        }
+
+        /* --- Responsive Styles for Mobile (under 768px) --- */
+        @media (max-width: 767.98px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .text-center.mb-4 h1 {
+                font-size: 2rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            .search-box {
+                margin: 0 auto 20px;
+                padding: 0; /* Remove horizontal padding added for desktop if not needed */
+            }
+
+            .input-group {
+                /* For small screens, keep them integrated but ensure they look good */
+                flex-direction: row; /* Keep them inline for the integrated look */
+                flex-wrap: nowrap; /* Prevent wrapping */
+            }
+
+            .form-control-lg {
+                flex-grow: 1; /* Allow input to take available space */
+                min-width: 0; /* Important for flex items to shrink */
+            }
+
+            .btn-lg {
+                /* Bootstrap's input-group button styling handles this well */
+                flex-shrink: 0; /* Prevent button from shrinking */
+                padding: 0.6rem 0.75rem; /* Slightly adjust button padding for mobile if needed */
+                font-size: 1rem;
+            }
+
+
+            .category-tabs {
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 1rem !important;
+                margin-bottom: 1.5rem !important;
+            }
+
+            .category-tabs .nav-item {
+                flex-grow: 1;
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+
+            .category-tabs .nav-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .row-cols-1.row-cols-sm-2.row-cols-md-4.row-cols-lg-5.row-cols-xl-6 {
+                --bs-gutter-x: 0.75rem;
+                --bs-gutter-y: 0.75rem;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            }
+
+            .movie-card {
+                margin-bottom: 0.75rem;
+            }
+
+            .movie-img {
+                height: 200px;
+            }
+
+            .movie-title {
+                font-size: 0.85rem;
+                padding: 10px;
+            }
+
+            .load-more-container {
+                margin: 30px 0;
+            }
+
+            #loadMoreBtn {
+                padding: 8px 20px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -207,7 +311,7 @@
             </form>
         </div>
 
-        <ul class="nav nav-tabs category-tabs mb-5 mt-4 justify-content-center"> {# Added mt-4 and increased mb-5 #}
+        <ul class="nav nav-tabs category-tabs mb-5 mt-4 justify-content-center">
             <li class="nav-item">
                 <a class="nav-link {% if category == 'recent' %}active{% endif %}"
                    href="/language/{{ language }}?category=recent">Recently Added</a>
