@@ -59,21 +59,36 @@
             display: none;
             margin: 20px auto;
         }
+        /* --- START Category Tabs CSS Changes --- */
+        .category-tabs {
+            border-bottom: none; /* Remove the bottom line from the entire tab container */
+        }
+        .category-tabs .nav-item {
+            margin: 0 2px; /* Small margin to bring tabs closer but not touching */
+        }
         .category-tabs .nav-link {
             font-weight: 500;
             color: #495057; /* Dark grey for tabs */
-            transition: color 0.5s ease, background-color 0.5s ease; /* Added background-color for transition */
+            transition: color 0.5s ease, background-color 0.5s ease;
+            border: 1px solid transparent; /* Make border transparent */
+            border-radius: 8px; /* Rounded corners */
+            padding: 8px 16px; /* Adjust padding as needed */
+        }
+        .category-tabs .nav-link:hover {
+            background-color: #e9ecef; /* Slightly darker background on hover */
+            color: #212529; /* Darker text on hover */
         }
         .category-tabs .nav-link.active {
             font-weight: 600;
             color: #0d6efd; /* Bootstrap primary blue */
             background-color: #e9ecef; /* Light grey background for active tab */
-            border-color: #dee2e6 #dee2e6 #f8f9fa; /* Borders for tab effect */
+            border-color: #e9ecef; /* Match border to background for a "no border" look */
             transition: color 0.5s ease, background-color 0.5s ease, border-color 0.5s ease;
         }
+        /* --- END Category Tabs CSS Changes --- */
         .search-box {
             max-width: 500px;
-            margin: 0 auto 30px;
+            margin: 0 auto 40px; /* Increased bottom margin for more separation */
         }
 
         /* Add transitions to elements that change color/background */
@@ -101,17 +116,22 @@
         body.dark-mode h1 {
             color: #ffffff; /* White heading text */
         }
+        /* --- START Dark Mode Category Tabs CSS Changes --- */
+        body.dark-mode .category-tabs {
+            border-bottom: none; /* Remove the bottom line from the entire tab container in dark mode */
+        }
         body.dark-mode .category-tabs .nav-link {
             color: #bbbbbb; /* Lighter grey for inactive tabs */
             background-color: #1e1e1e; /* Dark background for inactive tabs */
-            border-color: #333 #333 #121212; /* Borders for tab effect */
+            border-color: #1e1e1e; /* Match background to hide border */
         }
         body.dark-mode .category-tabs .nav-link.active {
             font-weight: 600;
             color: #0d6efd; /* Keep Bootstrap primary blue */
             background-color: #2c3136; /* Darker blue background for active tab */
-            border-color: #333 #333 #121212; /* Adjusted borders for dark mode */
+            border-color: #2c3136; /* Match background to hide border */
         }
+        /* --- END Dark Mode Category Tabs CSS Changes --- */
         body.dark-mode .form-control {
             background-color: #333; /* Darker input background */
             color: #e0e0e0; /* Light text for input */
@@ -155,7 +175,7 @@
             font-size: 1.25rem;
             cursor: pointer;
             background-color: #333; /* Dark background always */
-            color: white;          /* White icon always */
+            color: white;           /* White icon always */
             width: 2.5rem;
             height: 2.5rem;
             /* New positioning for the button */
@@ -187,7 +207,7 @@
             </form>
         </div>
 
-        <ul class="nav nav-tabs category-tabs mb-4 justify-content-center">
+        <ul class="nav nav-tabs category-tabs mb-5 mt-4 justify-content-center"> {# Added mt-4 and increased mb-5 #}
             <li class="nav-item">
                 <a class="nav-link {% if category == 'recent' %}active{% endif %}"
                    href="/language/{{ language }}?category=recent">Recently Added</a>
@@ -331,6 +351,7 @@
                         const movieHtml = `
                             <div class="col">
                                 <div class="movie-card h-100">
+                                    {# Pass both the page URL and the movie title to the /watch route #}
                                     <a href="/watch?url=${moviePageUrlEncoded}&title=${movieTitleEncoded}" class="movie-link">
                                         <img src="${movie.img_url}" class="movie-img" alt="${movie.title}"
                                              onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
