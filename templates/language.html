@@ -344,7 +344,7 @@
                     {# Pass both the page URL and the movie title to the /watch route #}
                     <a href="/watch?url={{ movie.page_url|urlencode }}&title={{ movie.title|urlencode }}" class="movie-link">
                         <img src="{{ movie.img_url }}" class="movie-img" alt="{{ movie.title }}"
-                             onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                             onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'" loading="lazy">
                         <div class="movie-title">{{ movie.title }}</div>
                     </a>
                 </div>
@@ -458,12 +458,12 @@
                                     {# Pass both the page URL and the movie title to the /watch route #}
                                     <a href="/watch?url=${moviePageUrlEncoded}&title=${movieTitleEncoded}" class="movie-link">
                                         <img src="${movie.img_url}" class="movie-img" alt="${movie.title}"
-                                             onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                                             onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'" loading="lazy">
                                         <div class="movie-title">${movie.title}</div>
                                     </a>
                                 </div>
                             </div>
-                        `;
+                        `;  
                         moviesContainer.insertAdjacentHTML('beforeend', movieHtml);
                     });
 
